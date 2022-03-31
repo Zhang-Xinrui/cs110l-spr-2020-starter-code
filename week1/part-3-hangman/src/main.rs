@@ -26,7 +26,6 @@ fn pick_a_random_word() -> String {
     let words: Vec<&str> = file_string.split('\n').collect();
     String::from(words[rand::thread_rng().gen_range(0, words.len())].trim())
 }
-
 fn main() {
     let secret_word = pick_a_random_word();
     // Note: given what you know about Rust so far, it's easier to pull characters out of a
