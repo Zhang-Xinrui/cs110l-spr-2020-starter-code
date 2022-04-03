@@ -134,10 +134,19 @@ impl OpenFile {
     /// program and we don't need to do fine-grained error handling, so returning Option is a
     /// simple way to indicate that "hey, we weren't able to get the necessary information"
     /// without making a big deal of it.)
-    #[allow(unused)] // TODO: delete this line for Milestone 4
     pub fn from_fd(pid: usize, fd: usize) -> Option<OpenFile> {
-        // TODO: implement for Milestone 4
-        unimplemented!();
+        let path = format!("/proc/{}/fd/{}", pid, fd);
+        let linkedPath = fs::read_link(path).ok()?;
+        if linkedPath.to_str().is_none() {
+            return None;
+        }
+        let name = OpenFile::path_to_name(linkedPath.to_str().unwrap());
+
+        let infoPath = format!("/proc/{}/fdinfo/{}", pid, fd);
+        let content = fs::read_to_string(infoPath).ok()?;
+        let cursor = OpenFile::parse_cursor(content.as_str());
+        let mode = OpenFile::parse_access_mode(content.as_str());
+        return Some(OpenFile{name: name, cursor: cursor.unwrap(), access_mode: mode.unwrap()});
     }
 
     /// This function returns the OpenFile's name with ANSI escape codes included to colorize
